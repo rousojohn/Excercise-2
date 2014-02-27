@@ -4,6 +4,7 @@
 package algorithmoi.ask2.parallel;
 
 import java.util.ArrayList;
+import java.util.Observable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -12,7 +13,7 @@ import java.util.concurrent.TimeUnit;
  * @author rousojohn
  *
  */
-public class MultiThreadedSearcher {
+public class MultiThreadedSearcher extends Observable {
 	private int[] array;
 	private int index = -1;
 	
@@ -98,7 +99,12 @@ public class MultiThreadedSearcher {
 		public void run() {
 			synchronized (this) {
 				int index = algorithmoi.ask2.sequential.Searcher.binarySearch(getArray(), key, start, end);
-				if (index != -1 ) MultiThreadedSearcher.this.setIndex(index);
+				if (index != -1 )
+				{ 
+					MultiThreadedSearcher.this.setIndex(index);
+					setChanged();
+					notifyObservers();
+				}
 			} 
 		}
 		
