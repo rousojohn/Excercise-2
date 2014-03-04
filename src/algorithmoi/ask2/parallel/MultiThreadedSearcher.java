@@ -4,6 +4,7 @@
 package algorithmoi.ask2.parallel;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Observable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -14,13 +15,13 @@ import java.util.concurrent.TimeUnit;
  *
  */
 public class MultiThreadedSearcher extends Observable {
-	private int[] array;
+	private List<Integer> array;//int[] array;
 	private int index = -1;
 	
 	/**
 	 * @return the array
 	 */
-	public int[] getArray() {
+	public List<Integer> getArray() {
 		return array;
 	}
 
@@ -28,7 +29,7 @@ public class MultiThreadedSearcher extends Observable {
 	/**
 	 * @param array the array to set
 	 */
-	public void setArray(int[] array) {
+	public void setArray(List<Integer> array) {
 		this.array = array;
 	}
 	
@@ -36,11 +37,11 @@ public class MultiThreadedSearcher extends Observable {
 	private ArrayList<SingleThreadSearcher> threads = new ArrayList<SingleThreadSearcher>();
 	private ExecutorService executor;
 
-	public MultiThreadedSearcher(int[] _array, int nThreads, int key){
+	public MultiThreadedSearcher(List<Integer> _array, int nThreads, int key){
 		this.array = _array;
 		executor = Executors.newFixedThreadPool(nThreads);
 		
-		int rem = this.array.length % nThreads;
+		int rem = this.array.size() % nThreads;
 		int start = 0, oldEnd = -1;
 		int end = 0;
 		for(int i=0; i<nThreads; i++)
@@ -50,7 +51,7 @@ public class MultiThreadedSearcher extends Observable {
 				end += 1;
 				--rem;
 			}
-			end += this.array.length / nThreads;
+			end += this.array.size() / nThreads;
 			threads.add(new SingleThreadSearcher(start, end-1,key));
 		}
 	}

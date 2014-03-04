@@ -1,5 +1,7 @@
 package algorithmoi.ask2;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
 
@@ -7,14 +9,27 @@ import algorithmoi.ask2.parallel.MultiThreadedSearcher;
 import algorithmoi.ask2.sequential.Searcher;
 
 public class Program implements Observer {
-	private static int[] array = {1,2,3,4,5,6,7,8,9,10,11};
+	private static List<Integer> array;
+	
 	MultiThreadedSearcher searcher;
 
 	public static void main(String[] args) {
 		Program p = new Program();
-		
-		// Sequential Search for debug purpose
-//		System.out.println( Searcher.binarySearch(array, 10));
+		array = new ArrayList<Integer>() {
+			{ 
+				add(1);
+				add(2);
+				add(3);
+				add(4);
+				add(5);
+				add(6);
+				add(7);
+				add(8);
+				add(9);
+				add(10);
+				add(11);
+			}
+		};	
 		
 		// Initialize the multi-threaded searcher
 		// giving it the data to search the number of threads to use and the integer to find
@@ -40,9 +55,7 @@ public class Program implements Observer {
 	 */
 	@Override
 	public void update(Observable arg0, Object arg1) {
-		System.out.println(((MultiThreadedSearcher)arg0).getIndex());
-		// TODO Auto-generated method stub
-		
+		System.out.println(((MultiThreadedSearcher)arg0).getIndex());		
 	}
 
 }
