@@ -8,6 +8,7 @@ import java.util.Observer;
 import java.util.Scanner;
 
 import algorithmoi.ask2.parallel.MultiThreadedSearcher;
+import algorithmoi.ask2.parallel.MyThreadPool;
 import algorithmoi.ask2.sequential.Searcher;
 
 public class Program implements Observer {
@@ -16,8 +17,53 @@ public class Program implements Observer {
 	MultiThreadedSearcher searcher;
 	private List<Integer> listX;
 	private List<Integer> listY;
-
+	
 	public static void main(String[] args) {
+		Program p = new Program();
+		
+		array = new ArrayList<Integer>() {
+			/**
+			 * Auto-generated serial UID 
+			 */
+			private static final long serialVersionUID = 1L;
+
+			{ 
+				add(1);
+				add(2);
+				add(3);
+				add(4);
+				add(5);
+				add(6);
+				add(7);
+				add(8);
+				add(9);
+				add(10);
+				add(11);
+			}
+		};	
+		
+		MyThreadPool.setStart(0);
+		MyThreadPool.setEnd(array.size() - 1);
+		MyThreadPool.setKey(0);
+		MyThreadPool.setFound(false);
+		MyThreadPool.setLocalIndex(0);
+		MyThreadPool.setStep(1);
+		MyThreadPool.setArray(array);
+		
+		MyThreadPool mThreadPool = new MyThreadPool(2);
+		
+		mThreadPool.runThreads();
+		
+		while (!mThreadPool.getExecutor().isTerminated()) ;
+		
+		if (MyThreadPool.isFound())
+			System.out.println("NUMBER "+MyThreadPool.getKey()+" FOUND AT "+MyThreadPool.getLocalIndex()+" POSITION\n");
+		else{
+			System.out.println("should be placed after "+MyThreadPool.getEnd()+" place\n");
+		}
+	}
+
+	public static void main1(String[] args) {
 		Program p = new Program();
 		
 		// Initialize the local variables holding the 2 lists to be merged
