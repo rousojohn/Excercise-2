@@ -9,7 +9,7 @@ public class Searcher {
 
 	public static int binarySearch(List<Integer> array, int key, int low, int high) {
 
-		if (low > high) return -1;
+		if (low > high) return high+1;
 		int mid = (low + high) / 2;
 		if (array.get(mid) == key) 
 			return mid;

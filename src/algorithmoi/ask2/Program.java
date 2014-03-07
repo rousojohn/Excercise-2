@@ -18,7 +18,10 @@ public class Program implements Observer {
 	private List<Integer> listX;
 	private List<Integer> listY;
 	
-	public static void main(String[] args) {
+	public static void main(String[] args){
+		testFirstPart();
+	}
+	public static void main2(String[] args) {
 		Program p = new Program();
 		
 		array = new ArrayList<Integer>() {
@@ -34,7 +37,7 @@ public class Program implements Observer {
 				add(4);
 				add(5);
 				add(6);
-				add(7);
+				//add(7);
 				add(8);
 				add(9);
 				add(10);
@@ -44,15 +47,15 @@ public class Program implements Observer {
 		
 		MyThreadPool.setStart(0);
 		MyThreadPool.setEnd(array.size() - 1);
-		MyThreadPool.setKey(0);
+		MyThreadPool.setKey(7);
 		MyThreadPool.setFound(false);
 		MyThreadPool.setLocalIndex(0);
 		MyThreadPool.setStep(1);
 		MyThreadPool.setArray(array);
 		
-		MyThreadPool mThreadPool = new MyThreadPool(2);
+		MyThreadPool mThreadPool = new MyThreadPool(2, false);
 		
-		mThreadPool.runThreads();
+		mThreadPool.runThreadsPart1();
 		
 		while (!mThreadPool.getExecutor().isTerminated()) ;
 		
@@ -134,23 +137,26 @@ public class Program implements Observer {
 			private static final long serialVersionUID = 1L;
 
 			{ 
-				add(1);
-				add(2);
-				add(3);
-				add(4);
-				add(5);
-				add(6);
-				add(7);
-				add(8);
-				add(9);
-				add(10);
-				add(11);
+//				add(1);
+//				add(2);
+//				add(3);
+//				add(4);
+//				//add(5);
+//				add(6);
+//				add(7);
+//				add(8);
+//				add(9);
+//				add(10);
+//				add(11);
+				for (int i=0; i<40; i++)
+					add(i+1);
+				remove(20);
 			}
 		};	
 		
 		// Initialize the multi-threaded searcher
 		// giving it the data to search the number of threads to use and the integer to find
-		p.searcher = new MultiThreadedSearcher(array,3,10);
+		p.searcher = new MultiThreadedSearcher(array,10,21);
 		
 		// add the program as an observer to the observable searcher
 		// so as to be informed immediately when the integer is found
