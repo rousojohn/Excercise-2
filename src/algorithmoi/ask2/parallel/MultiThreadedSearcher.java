@@ -5,10 +5,11 @@ package algorithmoi.ask2.parallel;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Observable;
+import java.util.TreeMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -17,8 +18,9 @@ import java.util.concurrent.locks.ReentrantLock;
  *
  */
 public class MultiThreadedSearcher extends Observable {
-	private List<Integer> array;//int[] array;
-	private int index = -1;
+	private List<Integer> array, array2;
+	private int index = -1, nThreads;
+	private Map<Integer, Result> resultMap;
 	
 	/**
 	 * @return the array
@@ -40,38 +42,29 @@ public class MultiThreadedSearcher extends Observable {
 	private ExecutorService executor;
 	private Lock lock = new ReentrantLock();
 
-	public MultiThreadedSearcher(List<Integer> _array, int nThreads, int key){
+	
+	public MultiThreadedSearcher(List<Integer> _array,List<Integer> _array2, int nThreads){
 		this.array = _array;
-		executor = Executors.newFixedThreadPool(nThreads);
-		Result.threadId = -1;
-		int rem = this.array.size() % nThreads;
-		int start = 0, oldEnd = -1;
-		int end = 0;
-		for(int i=0; i<nThreads; i++)
-		{
-			start = end;
-			if (rem > 0){
-				end += 1;
-				--rem;
-			}
-			end += this.array.size() / nThreads;
-			threads.add(new SingleThreadSearcher(start, end-1,key, i==nThreads-1, i));
-			
-		}
+		this.array2 = _array2;
+		this.nThreads = nThreads;
+		
+		this.setResultMap(new TreeMap<Integer, Result>());
+		
+		for(int i : array2)
+			this.getResultMap().put(i, new Result());
+		
+		this.executor = Executors.newFixedThreadPool(nThreads);
+		for (int i=0; i<nThreads; i++)
+			threads.add(new SingleThreadSearcher(i==nThreads-1, i));
 	}
+	
 	
 	public void runAllThreads(){
 		for (SingleThreadSearcher t : threads)
-			executor.execute(t);
+			getExecutor().execute(t);
 	// This will make the executor accept no new threads
     // and finish all existing threads in the queue
-    executor.shutdown();
-    // Wait until all threads are finish
-    try {
-		executor.awaitTermination(5L,TimeUnit.SECONDS);
-	} catch (InterruptedException e) {
-		System.out.println("Thread Interrupted");
-	}
+    getExecutor().shutdown();
 	}
 	
 	
@@ -96,6 +89,46 @@ public class MultiThreadedSearcher extends Observable {
 	
 
 	/**
+	 * @return the executor
+	 */
+	public ExecutorService getExecutor() {
+		return executor;
+	}
+
+
+	/**
+	 * @param executor the executor to set
+	 */
+	public void setExecutor(ExecutorService executor) {
+		this.executor = executor;
+	}
+
+
+
+
+
+
+	/**
+	 * @return the resultMap
+	 */
+	public Map<Integer, Result> getResultMap() {
+		return resultMap;
+	}
+
+
+	/**
+	 * @param resultMap the resultMap to set
+	 */
+	public void setResultMap(Map<Integer, Result> resultMap) {
+		this.resultMap = resultMap;
+	}
+
+
+
+
+
+
+	/**
 	 * Inner class SingleThreadSearcher simulating each thread
 	 * @author rousojohn
 	 *
@@ -104,33 +137,29 @@ public class MultiThreadedSearcher extends Observable {
 		private int start, end, key, threadId;
 		private boolean isLast;
 		
-		SingleThreadSearcher(int _start, int _end, int _key, boolean _isLast,int id){
-			start = _start;
-			end = _end;
-			key = _key;
-			isLast = _isLast;
-			threadId = id;
+		
+		
+		SingleThreadSearcher( boolean _isLast,int id){
+			this.isLast = _isLast;
+			this.threadId = id;
 		}
 		
 		@Override
 		public void run() {
-			//synchronized (this) {
+			for(int i=0; i<array2.size(); i++){
+				this.start = this.threadId * (array.size()/nThreads);
+				this.end = this.start + (array.size()/nThreads) - 1;
+				this.key = array2.get(i);
 				lock.lock();
-				if (key > array.get(end) && !isLast){lock.unlock(); return;}
-				int index = algorithmoi.ask2.sequential.Searcher.binarySearch(getArray(), key, start, end);
-				if (index != -1 )
-				{
-					System.err.println("Result.threadId "+Result.threadId + "  this.threadId "+this.threadId);
-					if (Result.threadId > this.threadId || Result.threadId == -1){
-						MultiThreadedSearcher.this.setIndex(index);
-						Result.threadId = this.threadId;
-						Result.index = index;
-						setChanged();
-						notifyObservers();
-					}
+				if (key > array.get(end) && !isLast){lock.unlock(); continue;}
+				int index = algorithmoi.ask2.sequential.Searcher.binarySearch(array, key,start, end);
+				if (((Result)getResultMap().get(key)).threadId > this.threadId || ((Result)getResultMap().get(key)).threadId == -1){
+					((Result)getResultMap().get(key)).threadId = this.threadId;
+					((Result)getResultMap().get(key)).index = index;
+					array.add(index, key);
 				}
 				lock.unlock();
-		//	} 
+			}
 		}
 		
 	}
@@ -143,31 +172,37 @@ public class MultiThreadedSearcher extends Observable {
 	 *
 	 */
 	static class Result {
-		private static int index;
-		private static int threadId;
+		private  int index;
+		private  int threadId;
+		
+		Result(){
+			index = -1;
+			threadId = -1;
+		}
+		
 		/**
 		 * @return the index
 		 */
-		public static int getIndex() {
+		public  int getIndex() {
 			return index;
 		}
 		/**
 		 * @param index the index to set
 		 */
-		public static void setIndex(int index) {
-			Result.index = index;
+		public  void setIndex(int index) {
+			this.index = index;
 		}
 		/**
 		 * @return the threadId
 		 */
-		public static int getThreadId() {
+		public  int getThreadId() {
 			return threadId;
 		}
 		/**
 		 * @param threadId the threadId to set
 		 */
-		public static void setThreadId(int threadId) {
-			Result.threadId = threadId;
+		public  void setThreadId(int threadId) {
+			this.threadId = threadId;
 		}
 	}
 }
